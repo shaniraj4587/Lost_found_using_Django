@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Lost & Found{% endblock %} | College Portal</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        /* Simple styling for form help text */
+        .helptext {
+            font-size: 0.875rem; /* text-sm */
+            color: #6b7280; /* text-gray-500 */
+            margin-top: 0.5rem; /* mt-2 */
+        }
+        ul.errorlist {
+            color: #ef4444; /* text-red-600 */
+            font-size: 0.875rem; /* text-sm */
+            margin-top: 0.5rem; /* mt-2 */
+            list-style-type: disc;
+            list-style-position: inside;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans antialiased">
+
+    <!-- Header / Navigation Bar -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <!-- Logo / Site Title -->
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="{% url 'home' %}" class="text-2xl font-bold text-blue-600">
+                        Lost & Found
+                    </a>
+                </div>
+                
+                <!-- Main Navigation -->
+                <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                    <a href="{% url 'home' %}" class="border-transparent text-gray-700 hover:border-gray-300 hover:text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                        Home
+                    </a>
+                    <a href="{% url 'item_list' %}?type=lost" class="border-transparent text-gray-700 hover:border-gray-300 hover:text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                        Lost Items
+                    </a>
+                    <a href="{% url 'item_list' %}?type=found" class="border-transparent text-gray-700 hover:border-gray-300 hover:text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                        Found Items
+                    </a>
+                </div>
+                
+                <!-- Auth Links -->
+                <div class="flex items-center ml-6 space-x-4">
+                    {% if user.is_authenticated %}
+                        <span class="text-sm text-gray-700">Hi, {{ user.username }}</span>
+                        <a href="{% url 'report_item' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Report Item
+                        </a>
+                        <form action="{% url 'logout' %}" method="post" class="inline">
+                            {% csrf_token %}
+                            <button type'submit" class="text-sm font-medium text-gray-700 hover:text-gray-900">
+                                Log Out
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="text-sm font-medium text-gray-700 hover:text-gray-900">
+                            Log In
+                        </a>
+                        <a href="{% url 'signup' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Sign Up
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow">
+        {% block content %}
+        <!-- Page content goes here -->
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 mt-16">
+        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-gray-400">
+                &copy; {% now "Y" %} MMDU Lost & Found Portal.
+            </p>
+        </div>
+    </footer>
+
+    {% block extra_js %}
+    <!-- Extra page-specific JavaScript goes here -->
+    {% endblock %}
+
+</body>
+</html>

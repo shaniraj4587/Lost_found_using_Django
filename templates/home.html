@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="relative bg-gray-800">
+    <div class="absolute inset-0">
+        <img class="w-full h-full object-cover" 
+             src="https://erp.mmumullana.org/assets/assets1/images/bg-auth.jpg" 
+             alt="College campus background">
+        <div class="absolute inset-0 bg-gray-800" style="opacity: 0.6;"></div>
+    </div>
+    <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
+        <h1 class="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
+            Welcome to the Portal
+        </h1>
+        <p class="mt-6 text-xl text-gray-200 max-w-3xl">
+            Lost something? Found something? Report it here to connect with the campus community and get your items back.
+        </p>
+        <div class="mt-10 flex space-x-4">
+            <a href="{% url 'report_item' %}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Report an Item
+            </a>
+            <a href="{% url 'item_list' %}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Browse Listings
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Area -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    
+    <!-- Recent Lost Items Section -->
+    <div>
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Recently Lost</h2>
+            <a href="{% url 'item_list' %}?type=lost" class="text-sm font-medium text-blue-600 hover:text-blue-500">
+                View all &rarr;
+            </a>
+        </div>
+        
+        <!-- Grid for Lost Items -->
+        <div class="grid grid-cols-1 gap-y-10 sm:grid-cols-2 gap-x-6 lg:grid-cols-3 xl:grid-cols-5 xl:gap-x-8">
+            {% for item in recent_lost_items %}
+                <a href="{% url 'item_detail' item.pk %}" class="group">
+                    <div class="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
+                        <img src="{{ item.get_first_image_url }}" alt="{{ item.title }}" class="w-full h-full object-center object-cover group-hover:opacity-75">
+                    </div>
+                    <h3 class="mt-4 text-sm text-gray-700">{{ item.title }}</h3>
+                    <p class="mt-1 text-lg font-medium text-gray-900">Lost in: {{ item.location }}</p>
+                </a>
+            {% empty %}
+                <p class="text-gray-500 col-span-full">No lost items reported recently.</p>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Recent Found Items Section -->
+    <div class="mt-16">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Recently Found</h2>
+            <a href="{% url 'item_list' %}?type=found" class="text-sm font-medium text-blue-600 hover:text-blue-500">
+                View all &rarr;
+            </a>
+        </div>
+        
+        <!-- Grid for Found Items -->
+        <div class="grid grid-cols-1 gap-y-10 sm:grid-cols-2 gap-x-6 lg:grid-cols-3 xl:grid-cols-5 xl:gap-x-8">
+            {% for item in recent_found_items %}
+                <a href="{% url 'item_detail' item.pk %}" class="group">
+                    <div class="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
+                        <img src="{{ item.get_first_image_url }}" alt="{{ item.title }}" class="w-full h-full object-center object-cover group-hover:opacity-75">
+                    </div>
+                    <h3 class="mt-4 text-sm text-gray-700">{{ item.title }}</h3>
+                    <p class="mt-1 text-lg font-medium text-gray-900">Found at: {{ item.location }}</p>
+                </a>
+            {% empty %}
+                <p class="text-gray-500 col-span-full">No items found recently.</p>
+            {% endfor %}
+        </div>
+    </div>
+    
+</div>
+{% endblock %}

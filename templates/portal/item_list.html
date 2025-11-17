@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if item_type == 'lost' %}Lost Items{% endif %}
+    {% if item_type == 'found' %}Found Items{% endif %}
+    {% if not item_type %}All Items{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="bg-white">
+    <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <div class="pb-8 border-b border-gray-200">
+            <h1 class="text-3xl font-extrabold text-gray-900">
+                {% if item_type == 'lost' %}Lost Items{% endif %}
+                {% if item_type == 'found' %}Found Items{% endif %}
+                {% if not item_type %}All Reported Items{% endif %}
+            </h1>
+            <p class="mt-2 text-lg text-gray-500">Browse all approved items reported by the campus community.</p>
+
+            <!-- Search and Filter Bar -->
+            <form method="get" action="{% url 'item_list' %}" class="mt-6 flex flex-col sm:flex-row gap-4">
+                <input type="hidden" name="type" value="{{ item_type|default:'' }}">
+                
+                <!-- Search Input -->
+                <div class="flex-grow">
+                    <label for="search" class="sr-only">Search</label>
+                    <input type="search" name="q" id="search"
+                           value="{{ query|default:'' }}"
+                           class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-lg"
+                           placeholder="Search by title, description, or location...">
+                </div>
+                
+                <!-- Filter Buttons -->
+                <div class="flex space-x-2">
+                    <button type="submit"
+                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Search
+                    </button>
+                    <a href="{% url 'item_list' %}{% if item_type %}?type={{ item_type }}{% endif %}"
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Clear
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Items Grid -->
+        <div class="mt-8">
+            {% if items %}
+                <div class="grid grid-cols-1 gap-y-10 sm:grid-cols-2 gap-x-6 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
+                    {% for item in items %}
+                        <a href="{% url 'item_detail' item.pk %}" class="group">
+                            <div class="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
+                                <img src="{{ item.get_first_image_url }}" alt="{{ item.title }}" class="w-full h-full object-center object-cover group-hover:opacity-75">
+                            </div>
+                            <span class="mt-4 inline-block px-2 py-0.5 rounded-full text-xs font-medium 
+                                {% if item.item_type == 'lost' %} bg-red-100 text-red-800 {% else %} bg-green-100 text-green-800 {% endif %}">
+                                {{ item.get_item_type_display }}
+                            </span>
+                            <h3 class="mt-1 text-base text-gray-700">{{ item.title }}</h3>
+                            <p class="mt-1 text-sm font-medium text-gray-900">
+                                {% if item.item_type == 'lost' %}Lost:{% else %}Found:{% endif %} {{ item.location }}
+                            </p>
+                            <p class="mt-1 text-xs text-gray-500">
+                                Reported: {{ item.reported_at|date:"d M Y" }}
+                            </p>
+                        </a>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination (if needed) -->
+                {% if is_paginated %}
+                    <nav class="mt-12 border-t border-gray-200 px-4 flex items-center justify-between sm:px-0">
+                        <div class="-mt-px w-0 flex-1 flex">
+                            {% if page_obj.has_previous %}
+                                <a href="?page={{ page_obj.previous_page_number }}{% if item_type %}&type={{ item_type }}{% endif %}{% if query %}&q={{ query }}{% endif %}" class="border-t-2 border-transparent pt-4 pr-1 inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                    &larr; Previous
+                                </a>
+                            {% endif %}
+                        </div>
+                        <div class="hidden md:-mt-px md:flex">
+                            <span class="border-transparent text-gray-500 border-t-2 pt-4 px-4 inline-flex items-center text-sm font-medium">
+                                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                            </span>
+                        </div>
+                        <div class="-mt-px w-0 flex-1 flex justify-end">
+                            {% if page_obj.has_next %}
+                                <a href="?page={{ page_obj.next_page_number }}{% if item_type %}&type={{ item_type }}{% endif %}{% if query %}&q={{ query }}{% endif %}" class="border-t-2 border-transparent pt-4 pl-1 inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                    Next &rarr;
+                                </a>
+                            {% endif %}
+                        </div>
+                    </nav>
+                {% endif %}
+
+            {% else %}
+                <div class="text-center py-12">
+                    <h3 class="mt-2 text-lg font-medium text-gray-900">No items found</h3>
+                    <p class="mt-1 text-sm text-gray-500">No items match your search criteria. Try removing some filters.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

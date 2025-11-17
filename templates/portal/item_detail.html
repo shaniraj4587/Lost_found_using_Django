@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.title }}{% endblock %}
+
+{% block content %}
+<div class="bg-white">
+    <div class="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        
+        <!-- Item Header -->
+        <div class="pb-6 border-b border-gray-200">
+            <span class="inline-block px-3 py-1 rounded-full text-sm font-medium 
+                {% if item.item_type == 'lost' %} bg-red-100 text-red-800 {% else %} bg-green-100 text-green-800 {% endif %}">
+                {{ item.get_item_type_display }}
+            </span>
+            <h1 class="mt-2 text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl">
+                {{ item.title }}
+            </h1>
+            <p class="mt-2 text-lg text-gray-500">
+                Reported by <span class="font-medium text-gray-700">{{ item.reporter.username }}</span> on {{ item.reported_at|date:"F d, Y" }}
+            </p>
+        </div>
+
+        <!-- Main Content (Images and Details) -->
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- Image Carousel -->
+            <div class="space-y-4">
+                <h2 class="text-xl font-semibold text-gray-900">Images</h2>
+                {% if item_images %}
+                    <!-- Main Image Display -->
+                    <div class="w-full bg-gray-200 rounded-lg overflow-hidden">
+                        <img id="main-image" src="{{ item_images.first.image.url }}" alt="{{ item.title }} main image" class="w-full h-auto object-cover object-center aspect-square">
+                    </div>
+                    <!-- Thumbnail Gallery -->
+                    <div class="flex space-x-2 overflow-x-auto p-1">
+                        {% for img in item_images %}
+                            <button class="thumbnail-btn flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 border-transparent hover:border-blue-500 focus:outline-none focus:border-blue-500
+                                {% if forloop.first %}border-blue-500{% endif %}"
+                                data-image-url="{{ img.image.url }}">
+                                <img src="{{ img.image.url }}" alt="Thumbnail {{ forloop.counter }}" class="w-full h-full object-cover">
+                            </button>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <!-- Placeholder if no images -->
+                    <div class="w-full bg-gray-200 rounded-lg overflow-hidden">
+                        <img src="https://placehold.co/600x600/eeeeee/cccccc?text=No+Image" alt="No image available" class="w-full h-auto object-cover object-center aspect-square">
+                    </div>
+                    <p class="text-sm text-gray-500">No images were provided for this item.</p>
+                {% endif %}
+            </div>
+            
+            <!-- Item Details -->
+            <div class="space-y-6">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-900">Details</h2>
+                    <dl class="mt-4 space-y-4">
+                        <div class="sm:col-span-1">
+                            <dt class="text-sm font-medium text-gray-500">Location</dt>
+                            <dd class="mt-1 text-lg text-gray-900">{{ item.location }}</dd>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <dt class="text-sm font-medium text-gray-500">Description</dt>
+                            <dd class="mt-1 text-base text-gray-700 whitespace-pre-wrap">{{ item.description }}</dd>
+                        </div>
+                    </dl>
+                </div>
+                
+                {% if item.reporter == user %}
+                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+                        <p class="text-sm text-blue-700">
+                            This is your post. You can manage it from your dashboard (feature coming soon) or contact an admin to have it removed.
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Comments Section -->
+        <div class="mt-12 pt-8 border-t border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-900">Comments</h2>
+            
+            <!-- New Comment Form -->
+            {% if user.is_authenticated %}
+                <form action="{% url 'add_comment' item.pk %}" method="post" class="mt-4">
+                    {% csrf_token %}
+                    {{ comment_form }}
+                    <div class="mt-2">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Post Comment
+                        </button>
+                    </div>
+                </form>
+            {% else %}
+                <p class="mt-4 text-sm text-gray-500">
+                    You must be <a href="{% url 'login' %}?next={{ request.path }}" class="font-medium text-blue-600 hover:underline">logged in</a> to post a comment.
+                </p>
+            {% endif %}
+
+            <!-- Existing Comments List -->
+            <div class="mt-6 space-y-6">
+                {% for comment in comments %}
+                    <div class="flex space-x-3">
+                        <div class="flex-shrink-0">
+                            <!-- Simple circle with initials -->
+                            <span class="inline-flex items-center justify-center h-10 w-10 rounded-full bg-gray-200">
+                                <span class="font-medium text-gray-600">{{ comment.author.username|first|upper }}</span>
+                            </span>
+                        </div>
+                        <div class="flex-1 bg-gray-50 rounded-lg px-4 py-3">
+                            <div class="flex items-center justify-between">
+                                <span class="font-medium text-gray-900">{{ comment.author.username }}</span>
+                                <span class="text-xs text-gray-500">{{ comment.created_at|timesince }} ago</span>
+                            </div>
+                            <p class="mt-1 text-gray-700 whitespace-pre-wrap">{{ comment.body }}</p>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-sm text-gray-500">Be the first to comment on this item.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- JavaScript for the image gallery -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const mainImage = document.getElementById('main-image');
+        const thumbnailButtons = document.querySelectorAll('.thumbnail-btn');
+
+        thumbnailButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Set main image src
+                mainImage.src = this.dataset.imageUrl;
+                
+                // Update active border
+                thumbnailButtons.forEach(btn => btn.classList.remove('border-blue-500'));
+                this.classList.add('border-blue-500');
+            });
+        });
+    });
+</script>
+{% endblock %}
